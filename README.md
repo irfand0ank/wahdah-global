@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wahdah Global
 
-## Getting Started
+Situs Wahdah Global: halaman publik tiga bahasa (`id`, `en`, `ar`) dan panel admin di `/admin` untuk mengelola konten. Dibangun dengan Next.js 16 (App Router), Tailwind CSS, dan Supabase (database, auth, storage).
 
-First, run the development server:
+## Yang dibutuhkan
+
+- Node.js 22 dan pnpm 11
+- Satu project Supabase (punya sendiri)
+- Akun Vercel untuk deploy
+
+## 1. Clone dan install
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone git@github.com:irfand0ank/wahdah-global.git
+cd wahdah-global
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 2. Siapkan database Supabase
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Buat project baru di [supabase.com](https://supabase.com), lalu jalankan file SQL berikut **secara berurutan** di SQL Editor:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. `supabase/migrations/0001_init.sql`
+2. `supabase/migrations/0002_gallery.sql`
+3. `supabase/migrations/0003_slides_stats.sql`
+4. `supabase/migrations/0004_translations.sql`
+5. `supabase/seed.sql` (opsional, berisi konten contoh yang bisa dihapus dari panel admin)
 
-## Learn More
+Migrasi ini membuat tabel, aturan RLS, dan bucket storage publik bernama `media` untuk gambar.
 
-To learn more about Next.js, take a look at the following resources:
+Alternatif dengan Supabase CLI:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+supabase link --project-ref <project-ref>
+supabase db push
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 3. Environment variable
 
-## Deploy on Vercel
+Buat file `.env.local` di root project (file ini tidak ikut ke git):
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key>
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Kedua nilai ada di dashboard Supabase, bagian Project Settings → API. Kalau project memakai anon key lama, `NEXT_PUBLIC_SUPABASE_ANON_KEY` juga dibaca.
+
+## 4. Buat akun admin
+
+Punya akun saja tidak cukup untuk masuk ke panel admin; user harus terdaftar di tabel `admins`.
+
+1. Di dashboard Supabase buka Authentication → Users → Add user, isi email dan password.
+2. Jalankan di SQL Editor:
+
+```sql
+insert into admins (user_id)
+select id from auth.users where email = 'email-admin@contoh.com';
+```
+
+Login lewat `/admin/login` dengan email dan password tersebut.
+
+## 5. Jalankan
+
+```bash
+pnpm dev
+```
+
+Buka [http://localhost:3000](http://localhost:3000). Perintah lain: `pnpm build`, `pnpm start`, `pnpm lint`.
+
+## Deploy ke Vercel
+
+1. Import repo ini di Vercel (atau jalankan `vercel` dari folder project).
+2. Tambahkan dua environment variable dari langkah 3 di Project Settings → Environment Variables.
+3. Deploy.
+
+## Struktur singkat
+
+| Lokasi | Isi |
+| --- | --- |
+| `src/app/[lang]/` | Halaman publik per bahasa |
+| `src/app/admin/` | Panel admin dan login |
+| `src/components/` | Komponen UI |
+| `src/lib/` | Klien Supabase, i18n, pengambilan konten, definisi resource admin |
+| `src/proxy.ts` | Pengalihan bahasa dan proteksi rute |
+| `supabase/` | Migrasi dan seed database |
+
+## Catatan untuk pengembang
+
+Project ini memakai Next.js 16, yang punya perubahan dari versi sebelumnya (misalnya `proxy.ts` menggantikan `middleware.ts`). Lihat `AGENTS.md` sebelum mengubah kode.
