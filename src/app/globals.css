@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Warna merek: navy blue (#000080) sebagai dasar, electric blue (#00F0FF) sebagai aksen. */
+@theme {
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #d9e2ff;
+  --color-brand-500: #1f4fd8;
+  --color-brand-700: #000080;
+  --color-brand-900: #00004d;
+  --color-accent: #00f0ff;
+  --color-accent-dark: #007f96;
+  --color-sand: #f5f8fd;
+  --color-ink: #0b1030;
+  --color-muted: #55607a;
+  --color-line: #dbe3f0;
+  --font-sans: var(--font-body), var(--font-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-arabic), ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.font-display {
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-sand);
+  color: var(--color-ink);
+}
+
+.container-page {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.prose-body p + p {
+  margin-top: 1rem;
 }
